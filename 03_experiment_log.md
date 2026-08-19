@@ -10,3 +10,6 @@
 | EXP-001 | YYYY-MM-DD | commit-id | v0.1 | LapTimeSeconds | Track + driver + session mean | Held-out events | Track-session mean | | | | Baseline |
 | EXP-002 | YYYY-MM-DD | commit-id | v0.1 | LapTimeSeconds | Baseline feature set | Held-out events | Ridge | | | | |
 | EXP-003 | YYYY-MM-DD | commit-id | v0.1 | LapTimeSeconds | Baseline + tyre/weather/history | Held-out events | HistGradientBoosting | | | | |
+
+## Data quality notes
+- FastF1's `Deleted` column returns dtype `object` with `None` for "not deleted" laps in some sessions, rather than boolean `False`. Direct `== False` comparisons silently fail. Fixed by using `.fillna(False) != True`.

@@ -35,6 +35,8 @@
 | RollingMeanLast3 | Mean of prior 3 valid laps | Smooths recent pace | Exclude target lap |
 | DriverEventHistoricalMean | Driver historical pace at same event | Driver-track familiarity proxy | Compute using training data only |
 | FieldMedianPriorLap | Median previous-lap pace of active field | Track evolution proxy | Must be time-aligned and exclude target target |
+| IsAccurate | Quality flag distinguishing genuine flying laps from out/in laps | Use as a filter, not a predictive feature |
+| TrackStatus | Session condition code at lap time | Needs decoding before use; verify meaning per FastF1 documentation |
 
 ## Features excluded from Version 1
 
@@ -47,6 +49,8 @@
 | Target-lap throttle/brake/speed traces | Measured during/after target lap |
 | Final session classification | Unknown before the target lap ends |
 | Future laps / future weather measurements | Future information leakage |
+| SpeedI1, SpeedI2, SpeedFL, SpeedST | Speed-trap readings measured during the target lap |
+| IsPersonalBest | Known only after the lap; not yet decided if useful for next-lap features |
 
 ## Optional Version 2 features
 
