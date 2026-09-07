@@ -30,44 +30,20 @@ def add_lap_time_seconds(laps: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_driver_history_features(clean_laps: pd.DataFrame) -> pd.DataFrame:
-    """Add per-driver historical pre-lap features.
-
-    For each valid lap, compute features using only that driver's
-    earlier valid laps in the same session:
-
-    - ``PriorLapTimeSeconds``: the immediately preceding valid lap time.
-    - ``RollingMeanLast3``: mean of the driver's previous 3 valid laps.
-    - ``DriverSessionMeanSoFar``: mean of all the driver's previous
-      valid laps in this session (expanding mean, excludes current lap).
-    - ``DriverLapsCompletedSoFar``: count of previous valid laps by this
-      driver in this session, useful as a confidence/experience signal.
-
-    Parameters
-    ----------
-    clean_laps:
-        Output of ``filter_valid_laps``, already containing
-        ``LapTimeSeconds``. Must include ``Driver`` and ``LapNumber``.
-
-    Returns
-    -------
-    pandas.DataFrame
-        A copy sorted by Driver and LapNumber with new feature columns.
-        Rows without a prior valid lap will have NaN for
-        lag-dependent features; drop or impute these explicitly
-        before modeling.
-    """
     if "LapTimeSeconds" not in clean_laps.columns:
         raise ValueError(
             "LapTimeSeconds column is required. Call add_lap_time_seconds first."
         )
 
     result = clean_laps.sort_values(["Driver", "LapNumber"]).copy()
-
     grouped = result.groupby("Driver")["LapTimeSeconds"]
+
+    def _rolling_mean_last_3(lap_times: pd.Series) -> pd.Series:
+        return lap_times.shift(1).rolling(window=3, min_periods=1).mean()
 
     result["PriorLapTimeSeconds"] = grouped.shift(1)
     result["RollingMeanLast3"] = (
-        grouped.shift(1).rolling(window=3, min_periods=1).mean().reset_index(drop=True).values
+        grouped.apply(_rolling_mean_last_3).reset_index(drop=True).values
     )
     result["DriverSessionMeanSoFar"] = (
         grouped.apply(lambda s: s.shift(1).expanding(min_periods=1).mean())
